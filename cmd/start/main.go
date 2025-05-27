@@ -9,7 +9,7 @@ func main() {
 	ebiten.SetWindowSize(maze.Widthpx, maze.Heightpx)
 	ebiten.SetWindowTitle("Maze")
 
-	game := &maze.Maze{}
+	game := maze.NewMaze()
 	if err := ebiten.RunGame(game); err != nil {
 		panic(err)
 	}
