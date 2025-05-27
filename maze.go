@@ -4,6 +4,7 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -24,7 +25,6 @@ const (
 )
 
 type Maze struct {
-	State
 	m       Layout
 	current struct {
 		row int
@@ -39,13 +39,36 @@ func NewMaze() *Maze {
 			row int
 			col int
 		}{
-			row: 2,
-			col: 4,
+			row: 0,
+			col: 0,
 		},
 	}
 }
 
+func (maze *Maze) newGame() {
+	maze.m = NewLayout()
+	maze.current = struct {
+		row int
+		col int
+	}{}
+}
+
 func (maze *Maze) Update() error {
+	if maze.current.row > 0 && maze.m[maze.current.row-1][maze.current.col] && (inpututil.IsKeyJustPressed(ebiten.KeyW) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp)) {
+		maze.current.row--
+	}
+	if maze.current.row < Height-1 && maze.m[maze.current.row+1][maze.current.col] && (inpututil.IsKeyJustPressed(ebiten.KeyS) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown)) {
+		maze.current.row++
+	}
+	if maze.current.col > 0 && maze.m[maze.current.row][maze.current.col-1] && (inpututil.IsKeyJustPressed(ebiten.KeyA) || inpututil.IsKeyJustPressed(ebiten.KeyArrowLeft)) {
+		maze.current.col--
+	}
+	if maze.current.col < Width-1 && maze.m[maze.current.row][maze.current.col+1] && (inpututil.IsKeyJustPressed(ebiten.KeyD) || inpututil.IsKeyJustPressed(ebiten.KeyArrowRight)) {
+		maze.current.col++
+	}
+	if maze.current.row == Height-1 && maze.current.col == Width-1 {
+		maze.newGame()
+	}
 	return nil
 }
 
@@ -59,7 +82,7 @@ func (maze *Maze) drawPlayer(screen *ebiten.Image) {
 	CenterX := float32(maze.current.col*TilePxSize + TilePxSize/2)
 	CenterY := float32(maze.current.row*TilePxSize + TilePxSize/2)
 	vector.DrawFilledCircle(screen, CenterX, CenterY, 20, color.RGBA{
-		R: 255,
+		G: 255,
 		A: 255,
 	}, true)
 }

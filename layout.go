@@ -36,5 +36,56 @@ func NewLayout() Layout {
 		out[row] = Row
 	}
 
+	solution := newSolution(gen)
+	for r, row := range out {
+		for c := range row {
+			row[c] = solution[r][c] || row[c]
+		}
+	}
+
 	return out
+}
+
+func newSolution(gen *rand.Rand) Layout {
+	solution := make(Layout, 0, Height)
+	for range Height {
+		solution = append(solution, make([]bool, Width))
+	}
+	return randomWalk(solution, 0, 0, gen)
+}
+
+func randomWalk(visited Layout, row, col int, gen *rand.Rand) Layout {
+	visited[row][col] = true
+	if row == Height-1 && col == Width-1 {
+		solution := make(Layout, 0, Height)
+		for range Height {
+			solution = append(solution, make([]bool, Width))
+		}
+		solution[row][col] = true
+		return solution
+	}
+	var possibleNext [][2]int
+	if row > 0 && !visited[row-1][col] {
+		possibleNext = append(possibleNext, [2]int{row-1, col})
+	}
+	if row < Height - 1 && !visited[row+1][col] {
+		possibleNext = append(possibleNext, [2]int{row+1, col})
+	}
+	if col > 0 && !visited[row][col-1] {
+		possibleNext = append(possibleNext, [2]int{row, col-1})
+	}
+	if col < Width-1 && !visited[row][col+1] {
+		possibleNext = append(possibleNext, [2]int{row, col+1})
+	}
+	gen.Shuffle(len(possibleNext), func(i, j int) {
+		possibleNext[i], possibleNext[j] = possibleNext[j], possibleNext[i]
+	})
+	for _, next := range possibleNext {
+		done := randomWalk(visited, next[0], next[1], gen)
+		if done != nil{
+			done[row][col] = true
+			return done
+		}
+	}
+	return nil
 }
